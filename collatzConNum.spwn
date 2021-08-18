@@ -1,0 +1,67 @@
+extract $
+extract obj_props
+
+// Starting point
+num = counter(1i)
+
+//start %2 real time
+numMod2 = counter(?i)
+
+
+
+divideBy2 = (){
+//  somewhat convert to binary and erasing the last digit | the reason is left to the reader as an exercise
+    for itt in 17..2{
+        i = 2^itt
+        -> if num >= i{
+            num -= i
+            wait(0.05)
+            num += i/2
+        }
+    }
+//  check if the second last binary digit is 1 or 0 | which tell us whether the result is odd or even
+    if num >= 2{
+        num -= 1
+        numMod2 += 1
+    }
+}
+
+times3plus1 = (){
+    numMod2 -= 1
+    for itt in 17..0{
+        i = 2^itt
+        -> if num >= i{
+            num -= i
+            wait(0.01)
+            num += i*3
+        }
+    }
+    num += 1
+}
+
+
+
+wait(0.5)
+for itt in 17..1{
+    i = 2^itt
+    -> if num >= i{
+        num -= i
+        wait(0.01)
+        num += i
+    }
+}
+-> if num >= 1{
+    numMod2 += 1
+}
+
+wait(0.05)
+while_loop(() => (num <= 99999), (){
+    if numMod2 <= 0{
+        wait(0.05)
+        divideBy2()
+    }else{
+        wait(0.05)
+        times3plus1()
+    }
+    wait(0.05)
+})

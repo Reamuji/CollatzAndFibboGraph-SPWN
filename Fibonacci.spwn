@@ -1,0 +1,76 @@
+extract $
+extract obj_props
+import "toConstAlt.spwn"
+
+// Generated graph length
+n = 50
+
+// Small dot generated between generated value
+conPoint = 2
+
+//two number starting point
+fib1 = counter(1i)
+fib2 = counter(2i)
+
+//adjust max and min value fib1 & fib2 could get. | if you set it ouside this range, it will be innacurate
+startRange = (-10..10)
+
+
+
+// generate dot with proper follow value
+dotColor = ?c
+for i in 3..n+1 {
+    add(obj{
+        OBJ_ID: 1764,    
+        X: 15 + 30*i,
+        Y: 0,
+        GROUPS: (i as @group),
+        COLOR: dotColor,
+    })
+
+    (i as @group).follow((i-1) as @group)
+    (i as @group).follow((i-2) as @group)
+}
+
+// generate dot for first 2 value
+add(obj{
+    OBJ_ID: 1764,    
+    X: 45,
+    Y: 0,
+    GROUPS: 1g,
+    COLOR: dotColor,
+})
+add(obj{
+    OBJ_ID: 1764,    
+    X: 75,
+    Y: 0,
+    GROUPS: 2g,
+    COLOR: dotColor,
+})
+
+
+//add connector point between value
+semiTrans = ?c
+semiTrans.set(255,255,255,opacity=0.5)
+
+for i in 1..n{
+    for j in 1..conPoint+1{
+        group = ?g
+
+        add(obj{
+            OBJ_ID: 1764,    
+            X: 15 + 30*i + 30/(conPoint+1)*j,
+            Y: 0,
+            GROUPS: group,
+            COLOR:semiTrans,
+        })
+
+        group.follow((i) as @group,y_mod=(1 - (1/(conPoint+1)*j)))
+        group.follow((i+1) as @group,y_mod=(1/(conPoint+1)*j))
+    }
+}
+
+
+wait(1)
+-> 1g.move(0,fib1.toConstMove(startRange),1)
+-> 2g.move(0,fib2.toConstMove(startRange),1)

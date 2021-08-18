@@ -1,0 +1,144 @@
+extract $
+extract obj_props
+import "toConstAlt.spwn"
+
+//the setup use 146 group, 850 group left || could use less by decreasing cap significantly
+
+// Starting number
+num = counter(1i)
+
+//adjust max number | The graph is no longer accurate if the value surpass this
+cap = 99999     //  (barely use any group at this point, go wild) | group usage = 2log(cap) * 8
+
+//multiply the result with this number
+amplifier = 3
+
+// Generated graph length
+n = 125         //max 425 (assuming conPoint = 0)| use 2 group each
+
+// Small dot generated between actual value
+conPoint = 4    //group usage = (n-1)*conPoint
+
+
+
+
+max = floor(log(cap,2))
+
+a = 1g..(n as @group) //spwn will use the group if it not defined as variable
+
+// num % 2 | runtime counter to check if the value is odd or even
+numMod2 = counter(?i)
+
+// generate dot for counting value
+dotColor = ?c
+add(obj{
+        OBJ_ID: 1764,    
+        X: 0,
+        Y: 0,
+        GROUPS: (n+1) as @group,
+        COLOR: dotColor,
+})
+add(obj{
+        OBJ_ID: 1764,    
+        X: 0,
+        Y: 0,
+        GROUPS: (n+2) as @group,
+        COLOR: dotColor,
+})
+
+// generate dot for graph
+for i in 1..n+1 {
+    add(obj{
+        OBJ_ID: 1764,    
+        X: 15 + 30*i,
+        Y: 0,
+        GROUPS: (i as @group),
+        COLOR: dotColor,
+    })
+}
+
+//add connector point between value
+semiTrans = ?c
+semiTrans.set(255,255,255,opacity=0.5)
+
+for i in 1..n{
+    for j in 1..conPoint+1{
+        group = ?g
+
+        add(obj{
+            OBJ_ID: 1764,    
+            X: 15 + 30*i + 30/(conPoint+1)*j,
+            Y: 0,
+            GROUPS: group,
+            COLOR:semiTrans,
+        })
+
+        group.follow((i) as @group,y_mod=(1 - (1/(conPoint+1)*j)))
+        group.follow((i+1) as @group,y_mod=(1/(conPoint+1)*j))
+    }
+}
+
+
+divideBy2 = (){
+//  using binary for dividing
+    for itt in max..2{
+        i = 2^itt
+        -> if num >= i{
+            num -= i
+            wait(0.01)  //don't worry, it stable
+            num += i/2
+        }
+    }
+//  same but also check if the result is odd or even
+    if num >= 2{
+        num -= 1
+        numMod2 += 1
+    }
+}
+
+times3plus1 = (){
+    //  same method as above
+    numMod2 -= 1
+    for itt in max..0{
+        i = 2^itt
+        -> if num >= i{
+            num -= i
+            wait(0.01)
+            num += i*3
+        }
+    }
+    num += 1
+}
+
+
+
+// runtime
+
+//  count num % 2
+wait(0.5)
+for itt in max..1{
+    i = 2^itt
+    -> if num >= i{
+        num -= i
+        wait(0.01)
+        num += i
+    }
+}
+-> if num >= 1{
+    numMod2 += 1
+}
+
+
+wait(0.05)
+for_loop(1..n+1,reset=false, (i) {
+    ((n+1) as @group).move(0,num.toConstMove(..cap)*amplifier/3)
+    if numMod2 <= 0{
+        wait(0.05)
+        divideBy2()
+    }else{
+        wait(0.05)
+        times3plus1()
+    }
+    (i.to_const(0..n+2) as @group).move_to(((n+1) as @group),y_only=true)
+    ((n+1) as @group).move_to(((n+2) as @group),y_only=true)
+})
