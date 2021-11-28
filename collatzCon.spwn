@@ -8,17 +8,16 @@ import "toConstAlt.spwn"
 num = counter(1i)
 
 //adjust max number | The graph is no longer accurate if the value surpass this
-cap = 99999     //  (barely use any group at this point, go wild) | group usage = 2log(cap) * 8
-
-//multiply the result with this number
-amplifier = 3
+cap = 99999     // group usage = 2log(cap) * 8 | (barely use any group at this point, go wild)
 
 // Generated graph length
-n = 125         //max 425 (assuming conPoint = 0)| use 2 group each
+n = 125         // use 2 group each
 
 // Small dot generated between actual value
 conPoint = 4    //group usage = (n-1)*conPoint
 
+// Stretch the graph on Y axis
+amplifier = 3
 
 
 
